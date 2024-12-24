@@ -4,34 +4,26 @@ const dbConnection = require('./databaseConnection')
 const app = express();
 app.use(express.json());
 
-// let users = [{ id: 1, name: 'Venkat', course: 'Node' },
-// { id: 2, name: 'Lavanya', course: 'React' },
-// { id: 3, name: 'Teja', course: 'UI/UX' },
-// { id: 4, name: 'Shiva', course: 'Node' }];
-
-// app.get('/', (req, res) => {
-//     res.send('Welcome Back!');
-// })
-
-// app.get('/user', (req, res) => {
-//     res.json({
-//         message: "Successful"
-//     })
-// })
-
 app.get('/user/:id', async (req, res) => {
-    const client = await dbConnection.connect2()
-    const id = req.params.id;
-    const users = await client.query('select * from users where id=' + id)
-    console.log('Users:', users)
-    if (users && users.length != 0 && users[0].length != 0) {
-        res.json({ message: 'User data successfully fetched', data: users[0] })
+    try {
+        const client = await dbConnection.connect2()
+        const id = req.params.id;
+        const users = await client.query('select * from users where id=' + id)
+        console.log('Users:', users)
+        if (users && users.length != 0 && users[0].length != 0) {
+            res.json({ message: 'User data successfully fetched', data: users[0] })
+        }
+        else {
+            res.json({ message: 'User is not found' })
+        }
     }
-    else {
-        res.json({ message: 'User is not found' })
+    catch (error) {
+        console.log('error', error)
+        res.json({
+            message: "Something went wrong! Contact Administrator",
+        });
     }
 })
-
 
 app.post('/user', async (req, res) => {
     try {
@@ -40,9 +32,9 @@ app.post('/user', async (req, res) => {
         console.log('body', JSON.stringify(body))
         const client = await dbConnection.connect2()
         const query = "insert into users (id,name,course) values ?"
-        const values = body.map((item)=>[item.id, item.name, item.course]) 
+        const values = body.map((item) => [item.id, item.name, item.course])
         console.log('Values:', JSON.stringify(values))
-        const users = await client.query(query, values)
+        const users = await client.query(query, [values])
         console.log('Users:', JSON.stringify(users))
         let result = {
             message: "Successful", data: body, users
@@ -50,13 +42,13 @@ app.post('/user', async (req, res) => {
         console.log('response', JSON.stringify(result))
         res.json(result)
     }
-    catch {
+    catch (error) {
+        console.log('error', error)
         res.json({
             message: "Something went wrong! Contact Administrator",
         });
     }
 })
-
 
 app.put('/user/:id', async (req, res) => {
     try {
@@ -76,38 +68,41 @@ app.put('/user/:id', async (req, res) => {
             message: "User successfully updated",
         });
     }
-    catch {
+    catch (error) {
+        console.log('error', error)
         res.json({
             message: "Something went wrong! Contact Administrator",
         });
     }
 });
 
-// app.delete('/user/:id', (req, res) => {
-//     const id = parseInt(req.params.id);
-//     const user = users.find(user => user.id === id);
+app.delete('/user/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const client = await dbConnection.connect2()
+        const query = "delete from users where id = ?"
+        const values = [id]
+        const users = await client.query(query, values)
+        console.log('Users:', JSON.stringify(users))
 
-//     if (!user) {
-//         return res.status(404).json({
-//             message: "User not found"
-//         });
-//     }
+        if (users && users.length != 0 && users[0].affectedRows == 0) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
 
-//     users = users.filter(user => user.id !== id);
-//     res.json({
-//         message: "User successfully deleted",
-//         users
-//     });
-// });
-
-// app.post('/user', (req, res) => {
-//     const body = req.body;
-//     res.json({
-//         message: "User data received successfully!",
-//         data: body
-//     });
-//});
-
+        res.json({
+            message: "User successfully deleted",
+            users
+        });
+    }
+    catch (error) {
+        console.log('error', error)
+        res.json({
+            message: "Something went wrong! Contact Administrator",
+        });
+    }
+});
 
 const port = 3001;
 app.listen(port, () => {

@@ -1,25 +1,25 @@
 const mysql = require('mysql2')
 require('dotenv').config()
 
-const dbConnection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: process.env.DB_PASSWORD,
-    database: 'srisync',
-    port: 3306
-})
+// const dbConnection = mysql.createConnection({
+//     host: 'localhost',
+//     user: 'root',
+//     password: process.env.DB_PASSWORD,
+//     database: 'srisync',
+//     port: 3306
+// })
 
-const connect = () => {
-    dbConnection.connect((err) => {
-        if (err) {
-            console.log('error', err.stack)
-            return
-        }
-        else {
-            console.log('Succesfully connected to database')
-        }
-    })
-}
+// const connect = () => {
+//     dbConnection.connect((err) => {
+//         if (err) {
+//             console.log('error', err.stack)
+//             return
+//         }
+//         else {
+//             console.log('Succesfully connected to database')
+//         }
+//     })
+// }
 
 const dbConnection2 = mysql.createPool({
     host: 'localhost',
@@ -36,3 +36,5 @@ const connect2=async()=>{
 }
 
 module.exports= {connect, connect2}
+
+//connect()
